@@ -6,7 +6,6 @@ import json
 import bson
 import glob
 import os
-import image_processing as pi
 import cv2
 import numpy as np
 import gridfs
@@ -21,10 +20,48 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 mongo = PyMongo(app)
 app.secret_key = "maskeraidServer"
 
+
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
 base_dir_path = {}
 faces = []
 labels = []
 dict_face_labels = {}
+
+@app.route('/api/enrollTestImage', methods=['POST'])
+@cross_origin()
+def addTestImage():
+    result = []
+    fs = gridfs.GridFS(mongo.db)
+    testImages = mongo.db.testImages
+    image = request.files['img']
+    pilImage = Image.open(image)
+    open_cv_image = np.array(pilImage)
+    open_cv_image = open_cv_image[:, :, ::-1].copy()
+    imageString = open_cv_image.tostring()
+    imageID = fs.put(imageString, encoding='utf-8')
+
+    cv2Result = {
+            'imageID': imageID,
+            'shape': open_cv_image.shape,
+            'dtype':str(open_cv_image.dtype)
+    }
+
+    testImages.update_one({'filename' : image.filename},{"$set" : cv2Result}, True)
+
+    return jsonify({'result' : result})
+
+@app.route('/api/clearDB', methods=['DELETE'])
+@cross_origin()
+def clearDB():
+    client = MongoClient("mongodb://localhost")
+    client.drop_database('andde')
+    return ""
 
 @app.route('/api/enrollDB', methods=['POST'])
 @cross_origin()
@@ -33,6 +70,7 @@ def addImage():
     images = mongo.db.images
     cv2 = mongo.db.cv2
     image = request.files['img']
+    mongo.save_file(image.filename, image)
     pilImage = Image.open(image)
     open_cv_image = np.array(pilImage)
     open_cv_image = open_cv_image[:, :, ::-1].copy()
@@ -46,11 +84,11 @@ def addImage():
     cv2Result = {
             'imageID': imageID,
             'shape': open_cv_image.shape,
-            'dtype':str(open_cv_image.dtype)
+            'dtype':str(open_cv_image.dtype),
+            'person': image.filename.split('/')[1]
     }
     images.update_one({'filename' : image.filename},{"$set" : imageResult}, True)
     cv2.update_one({'filename' : image.filename},{"$set" : cv2Result}, True)
-    #mongo.save_file(image.filename, image)
 
     return jsonify({'result' : imageResult})
 
@@ -58,16 +96,28 @@ def addImage():
 @cross_origin()
 def predictImage():
     result = []
+    fs = gridfs.GridFS(mongo.db)
     stringData = request.data.decode("utf-8").strip('"')
     data = json.loads(stringData)
+    imgPath = data['image']
 
     populateLabels()
-    f, l = prepareTrainingData()
-    app.logger.info("Total Faces: " + str(len(f)))
-    app.logger.info("Total Labels: " + str(len(l)))
+    faces, labels = prepareTrainingData()
+    app.logger.info("Total Faces: " + str(len(faces)))
+    app.logger.info("Total Labels: " + str(len(labels)))
 
-    return jsonify({'result' : result})
+    face_recognizer = cv2.face.LBPHFaceRecognizer_create()
+    face_recognizer.train(faces, np.array(labels))
+    resImg = predict(imgPath, face_recognizer)
 
+    app.logger.info("Prediction Complete")
+    app.logger.info(resImg)
+
+    return jsonify({'result' : resImg})
+
+@app.route("/api/getImage/<path:filename>", methods=['GET'])
+def get_upload(filename):
+    return mongo.send_file(filename,cache_for=99999999)
 
 def populateLabels():
     col = mongo.db.images
@@ -88,11 +138,9 @@ def prepareTrainingData():
         for k,v in dict_face_labels.items():
             if v == doc['filename'].split('/')[1]:
                 label = int(k)
-                #app.logger.info(label)
                 break
 
         img = cv2.find_one({'filename':doc['filename']})
-
         gOut = fs.get(img['imageID'])
         image = np.frombuffer(gOut.read(), dtype=np.uint8)
         image = np.reshape(image, img['shape'])
@@ -114,6 +162,28 @@ def detect_face(img):
         return None, None
     (x, y, w, h) = faces[0]
     return gray[y:y + w, x:x + h], faces[0]  # could return more than one image
+
+def predict(imgPath, faceRec):
+    testImages = mongo.db.testImages
+    cv2 = mongo.db.cv2
+    fs = gridfs.GridFS(mongo.db)
+    img = testImages.find_one({'filename':imgPath})
+    gOut = fs.get(img['imageID'])
+    image = np.frombuffer(gOut.read(), dtype=np.uint8)
+    image = np.reshape(image, img['shape'])
+    face, rect = detect_face(image)
+    label = faceRec.predict(face)[0]
+    label_text = ""
+
+    for k, v in dict_face_labels.items():
+        if k == label:
+            label_text = str(v)
+
+
+    #ans_path = get_normal_base_image(label_text)
+    resImg = cv2.find_one({'person':label_text})
+    return resImg['filename']
+
 
 if __name__ == '__main__':
     app.run(debug=True)

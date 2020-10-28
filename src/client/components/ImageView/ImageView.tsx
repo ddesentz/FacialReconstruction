@@ -9,19 +9,30 @@ import {
 import { observer } from "mobx-react";
 import { IImageView, styles } from "./ImageViewStyles";
 import PersonIcon from "@material-ui/icons/Person";
+import { API_ENDPOINT, GET_IMAGE } from "../../common/Endpoints";
 
 const ImageViewComponent: React.FunctionComponent<IImageView> = ({
   title,
   src,
   name,
+  type,
   classes,
 }) => {
+  if (type === "result") {
+    console.log(src);
+  }
   const determineTitle = () => {
-    if (src === "")
+    if (name === "")
       return title.startsWith("Generated")
         ? "No Image Generated"
         : "No Image Selected";
     else return name;
+  };
+
+  const determineSrc = () => {
+    if (type === "result") {
+      return GET_IMAGE + "smallSet/anhu/0_0_anhu_0157.jpg";
+    } else return src;
   };
 
   return (
@@ -31,10 +42,10 @@ const ImageViewComponent: React.FunctionComponent<IImageView> = ({
       </Typography>
       <GridList className={classes.gridList} cols={1}>
         <GridListTile className={classes.imageContainer}>
-          {src !== "" ? (
+          {name !== "" ? (
             <img
               id="input-image"
-              src={src}
+              src={determineSrc()}
               className={classes.srcImage}
               alt={""}
             />

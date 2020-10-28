@@ -18,15 +18,23 @@ import ImageIcon from "@material-ui/icons/Image";
 import { Header } from "../components/Header/Header";
 import { ImageView } from "../components/ImageView/ImageView";
 import axios from "axios";
-import { ENROLL_DB, PREDICT } from "../common/Endpoints";
-import { post } from "../common/HTTP";
+import {
+  API_ENDPOINT,
+  CLEAR_DB,
+  ENROLL_DB,
+  ENROLL_TEST,
+  PREDICT,
+} from "../common/Endpoints";
+import { get, post } from "../common/HTTP";
 
 const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
   classes,
 }) => {
   const [inputImage, setInputImage] = React.useState("");
   const [inputImageName, setInputImageName] = React.useState("");
+  const [predictImage, setPredictImage] = React.useState("");
   const [generatedImage, setGeneratedImage] = React.useState("");
+  const [generatedImageName, setGeneratedImageName] = React.useState("");
   const inputFile = React.useRef(null);
   const inputDir = React.useRef(null);
   const [loading, setLoading] = React.useState(false);
@@ -37,6 +45,7 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
   const handleFileChange = (event: any) => {
     if (event.target.files && event.target.files[0]) {
       setInputImageName(event.target.files[0].name);
+      setPredictImage(event.target.files[0]);
       setInputImage(URL.createObjectURL(event.target.files[0]));
     }
   };
@@ -44,10 +53,10 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
   const handleDirChange = async (event: any) => {
     setLoading(true);
     const imagesDir = event.target.files;
-    console.log(imagesDir);
-    setTotalImages(imagesDir.length);
+    await axios.delete(CLEAR_DB);
     for (let i = 0; i < imagesDir.length; i++) {
       const formData = new FormData();
+      console.log(imagesDir[i]);
       formData.append("img", imagesDir[i]);
       await axios({
         method: "POST",
@@ -152,16 +161,40 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
     </div>
   );
 
-  const handleGenerate = () => {
-    console.log("File Name: " + inputImageName);
+  const determineAlgorithm = () => {
     switch (tabValue) {
       case 0:
-        return post(PREDICT, { image: inputImageName, algorithm: "LBHP" });
+        return "LBHP";
       case 1:
-        return post(PREDICT, { image: inputImageName, algorithm: "EIGEN" });
+        return "EIGHEN";
       case 2:
-        return post(PREDICT, { image: inputImageName, algorithm: "FISHER" });
+        return "FISHER";
     }
+  };
+
+  const handleGenerate = async () => {
+    const formData = new FormData();
+    formData.append("img", predictImage);
+    await axios({
+      method: "POST",
+      url: ENROLL_TEST,
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+      },
+    });
+    post(PREDICT, {
+      image: inputImageName,
+      algorithm: determineAlgorithm(),
+    }).then((data) => {
+      Promise.resolve(data.json()).then((r) => {
+        console.log(r.result);
+        setGeneratedImageName(r.result);
+      });
+    });
   };
 
   return (
@@ -184,10 +217,16 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
             title={"Selected Image"}
             src={inputImage}
             name={inputImageName}
+            type={"input"}
           />
         </Grid>
         <Grid item className={classes.generatedContainer}>
-          <ImageView title={"Generated Image"} src={generatedImage} name={""} />
+          <ImageView
+            title={"Generated Image"}
+            src={generatedImageName}
+            name={generatedImageName}
+            type={"result"}
+          />
         </Grid>
       </Grid>
       <Button

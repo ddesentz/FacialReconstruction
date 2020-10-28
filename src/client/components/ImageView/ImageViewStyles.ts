@@ -4,6 +4,7 @@ export interface IImageView extends WithStyles<typeof styles> {
   title: string;
   src: string;
   name: string;
+  type: string;
 }
 
 export const styles = (theme: Theme) =>
