@@ -36,7 +36,6 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
 
   const handleFileChange = (event: any) => {
     if (event.target.files && event.target.files[0]) {
-      console.log(event.target.files[0].name);
       setInputImageName(event.target.files[0].name);
       setInputImage(URL.createObjectURL(event.target.files[0]));
     }
@@ -82,7 +81,7 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
   const BuildFileSelector = () =>
     React.createElement("input", {
       type: "file",
-      accept: "image/gif, image/jpeg, image/png",
+      accept: "*",
       ref: inputFile,
       style: { display: "none" },
       onChange: function (e) {
