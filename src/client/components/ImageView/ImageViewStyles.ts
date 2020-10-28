@@ -21,16 +21,17 @@ export const styles = (theme: Theme) =>
       boxShadow: "0px 0px 20px black",
     },
     srcImage: {
-      width: "95%",
-      height: "auto",
-      top: "50%",
-      position: "relative",
-      marginTop: "-25%",
+      textAlign: "center",
+      position: "absolute",
       // backgroundColor: "transparent",
     },
-    imageContainer: {
-      width: "35vw",
+    gridList: {
+      width: "30vw",
       height: "70vh",
+    },
+    imageContainer: {
+      width: "35vw !important",
+      height: "70vh !important",
       backgroundColor: theme.palette.secondary.dark,
       position: "absolute",
       left: "50%",
@@ -38,9 +39,8 @@ export const styles = (theme: Theme) =>
       boxShadow: "0px 10px 20px black",
     },
     titleBar: {
-      marginBottom: theme.spacing(4),
       background:
-        "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.8211659663865546) 100%)",
+        "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,1) 100%)",
       height: theme.spacing(20),
       fontSize: "30 !important",
     },

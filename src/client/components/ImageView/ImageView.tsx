@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  GridList,
   GridListTile,
   GridListTileBar,
   Typography,
@@ -16,7 +17,10 @@ const ImageViewComponent: React.FunctionComponent<IImageView> = ({
   classes,
 }) => {
   const determineTitle = () => {
-    if (src === "") return "No Image Selected";
+    if (src === "")
+      return title.startsWith("Generated")
+        ? "No Image Generated"
+        : "No Image Selected";
     else return name;
   };
 
@@ -25,23 +29,24 @@ const ImageViewComponent: React.FunctionComponent<IImageView> = ({
       <Typography align={"center"} variant={"h4"} className={classes.title}>
         {title}
       </Typography>
-      <GridListTile key={src} className={classes.imageContainer}>
-        {src !== "" ? (
-          <img
-            id="input-image"
-            src={src}
-            className={classes.srcImage}
-            alt={""}
+      <GridList className={classes.gridList} cols={1}>
+        <GridListTile className={classes.imageContainer}>
+          {src !== "" ? (
+            <img
+              id="input-image"
+              src={src}
+              className={classes.srcImage}
+              alt={""}
+            />
+          ) : (
+            <PersonIcon className={classes.defaultIcon} />
+          )}
+          <GridListTileBar
+            title={determineTitle()}
+            className={classes.titleBar}
           />
-        ) : (
-          <PersonIcon className={classes.defaultIcon} />
-        )}
-
-        <GridListTileBar
-          title={determineTitle()}
-          className={classes.titleBar}
-        />
-      </GridListTile>
+        </GridListTile>
+      </GridList>
     </div>
   );
 };

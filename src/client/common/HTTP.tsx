@@ -1,7 +1,6 @@
 const headers = {
   Accept: "application/json",
   "Content-Type": "application/json",
-  Options: "/api/task-items",
 };
 
 export async function get(endpoint: string) {

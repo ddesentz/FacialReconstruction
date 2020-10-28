@@ -2,17 +2,24 @@ import * as React from "react";
 import {
   Button,
   Grid,
-  Icon,
+  LinearProgress,
   Tab,
   Tabs,
-  Typography,
   withStyles,
 } from "@material-ui/core";
 import { observer } from "mobx-react";
-import { IMaskeraidPage, styles } from "./MaskeraidStyles";
+import {
+  BorderLinearProgress,
+  IMaskeraidPage,
+  styles,
+} from "./MaskeraidStyles";
 import FolderIcon from "@material-ui/icons/Folder";
+import ImageIcon from "@material-ui/icons/Image";
 import { Header } from "../components/Header/Header";
 import { ImageView } from "../components/ImageView/ImageView";
+import axios from "axios";
+import { ENROLL_DB, PREDICT } from "../common/Endpoints";
+import { post } from "../common/HTTP";
 
 const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
   classes,
@@ -21,7 +28,10 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
   const [inputImageName, setInputImageName] = React.useState("");
   const [generatedImage, setGeneratedImage] = React.useState("");
   const inputFile = React.useRef(null);
-  const algorithmRef = React.createRef();
+  const inputDir = React.useRef(null);
+  const [loading, setLoading] = React.useState(false);
+  const [totalImages, setTotalImages] = React.useState(0);
+  const [progress, setProgress] = React.useState(0);
   const [tabValue, setTabValue] = React.useState(0);
 
   const handleFileChange = (event: any) => {
@@ -31,6 +41,43 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
       setInputImage(URL.createObjectURL(event.target.files[0]));
     }
   };
+
+  const handleDirChange = async (event: any) => {
+    setLoading(true);
+    const imagesDir = event.target.files;
+    console.log(imagesDir);
+    setTotalImages(imagesDir.length);
+    for (let i = 0; i < imagesDir.length; i++) {
+      const formData = new FormData();
+      formData.append("img", imagesDir[i]);
+      await axios({
+        method: "POST",
+        url: ENROLL_DB,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+          "Access-Control-Allow-Headers": "*",
+        },
+      }).then(() => {
+        setProgress(i + 1);
+      });
+    }
+    setLoading(false);
+  };
+
+  const BuildDirectorySelector = () =>
+    React.createElement("input", {
+      type: "file",
+      multiple: "multiple",
+      webkitdirectory: "true",
+      ref: inputDir,
+      style: { display: "none" },
+      onChange: function (e) {
+        handleDirChange(e);
+      },
+    });
 
   const BuildFileSelector = () =>
     React.createElement("input", {
@@ -43,21 +90,45 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
       },
     });
 
-  const handleImport = () => {
+  const handleImportFile = () => {
     // @ts-ignore
     inputFile.current.click();
   };
 
-  const importButton = () => (
+  const handleImportDir = () => {
+    // @ts-ignore
+    inputDir.current.click();
+  };
+
+  const importImageButton = () => (
+    <>
+      <Button
+        variant="contained"
+        startIcon={<ImageIcon style={{ fontSize: 30 }} />}
+        className={classes.importButton}
+        onClick={handleImportFile}
+      >
+        Import Image
+      </Button>
+    </>
+  );
+
+  const importDirectoryButton = () => (
     <>
       <Button
         variant="contained"
         startIcon={<FolderIcon style={{ fontSize: 30 }} />}
         className={classes.importButton}
-        onClick={handleImport}
+        onClick={handleImportDir}
       >
-        Import Image
+        Import Database
       </Button>
+      {loading && (
+        <BorderLinearProgress
+          variant="determinate"
+          value={(progress / totalImages) * 100}
+        />
+      )}
     </>
   );
 
@@ -75,9 +146,9 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
         aria-label="disabled tabs example"
         centered
       >
-        <Tab label="LBHP" />
-        <Tab label="EIGEN" />
-        <Tab label="FISHER" />
+        <Tab label="LBHP" className={classes.tab} />
+        <Tab label="EIGEN" className={classes.tab} />
+        <Tab label="FISHER" className={classes.tab} />
       </Tabs>
     </div>
   );
@@ -86,18 +157,22 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
     console.log("File Name: " + inputImageName);
     switch (tabValue) {
       case 0:
-        return console.log("Algorithm: LBHP");
+        return post(PREDICT, { image: inputImageName, algorithm: "LBHP" });
       case 1:
-        return console.log("Algorithm: EIGEN");
+        return post(PREDICT, { image: inputImageName, algorithm: "EIGEN" });
       case 2:
-        return console.log("Algorithm: FISHER");
+        return post(PREDICT, { image: inputImageName, algorithm: "FISHER" });
     }
   };
 
   return (
     <>
-      <Header middleItems={[selectAlgorithm()]} rightItems={[importButton()]} />
+      <Header
+        middleItems={[selectAlgorithm()]}
+        rightItems={[importImageButton(), importDirectoryButton()]}
+      />
       <BuildFileSelector />
+      <BuildDirectorySelector />
       <Grid
         container
         direction="row"

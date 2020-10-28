@@ -1,5 +1,12 @@
-import { createStyles, Theme, WithStyles } from "@material-ui/core";
+import {
+  createStyles,
+  LinearProgress,
+  Theme,
+  withStyles,
+  WithStyles,
+} from "@material-ui/core";
 import { blue } from "@material-ui/core/colors";
+import { maskeraidTheme } from "../common/Theme";
 
 export interface IMaskeraidPage extends WithStyles<typeof styles> {}
 
@@ -33,6 +40,9 @@ export const styles = (theme: Theme) =>
       borderRadius: "20px",
       textAlign: "center",
     },
+    tab: {
+      fontSize: 20,
+    },
     tabView: {
       color: theme.palette.primary.contrastText,
     },
@@ -50,6 +60,7 @@ export const styles = (theme: Theme) =>
     importButton: {
       marginRight: theme.spacing(5),
       width: "10vw",
+      height: "auto",
       fontSize: 20,
     },
     inputImage: {
@@ -88,3 +99,18 @@ export const styles = (theme: Theme) =>
       boxShadow: "0px 5px 10px black",
     },
   });
+
+export const BorderLinearProgress = withStyles({
+  root: {
+    marginTop: maskeraidTheme.spacing(1),
+    position: "absolute",
+    height: 10,
+    width: "10vw",
+    backgroundColor: maskeraidTheme.palette.primary.contrastText,
+    borderRadius: 20,
+  },
+  bar: {
+    borderRadius: 20,
+    backgroundColor: maskeraidTheme.palette.secondary.main,
+  },
+})(LinearProgress);
