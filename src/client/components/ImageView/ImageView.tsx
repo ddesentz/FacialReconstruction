@@ -31,7 +31,7 @@ const ImageViewComponent: React.FunctionComponent<IImageView> = ({
 
   const determineSrc = () => {
     if (type === "result") {
-      return GET_IMAGE + "smallSet/anhu/0_0_anhu_0157.jpg";
+      return GET_IMAGE + src;
     } else return src;
   };
 
