@@ -112,7 +112,7 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
     <>
       <Button
         variant="contained"
-        startIcon={<ImageIcon style={{ fontSize: 30 }} />}
+        startIcon={<ImageIcon style={{ fontSize: "2em" }} />}
         className={classes.importButton}
         onClick={handleImportFile}
       >
@@ -125,7 +125,7 @@ const MaskeraidComponent: React.FunctionComponent<IMaskeraidPage> = ({
     <>
       <Button
         variant="contained"
-        startIcon={<FolderIcon style={{ fontSize: 30 }} />}
+        startIcon={<FolderIcon style={{ fontSize: "2em" }} />}
         className={classes.importButton}
         onClick={handleImportDir}
       >

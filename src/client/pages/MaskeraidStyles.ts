@@ -46,12 +46,6 @@ export const styles = (theme: Theme) =>
     tabView: {
       color: theme.palette.primary.contrastText,
     },
-    logo: {
-      marginTop: theme.spacing(2),
-      marginRight: theme.spacing(4),
-      maxWidth: "80%",
-      height: "auto",
-    },
     button: {
       width: "10vw",
       margin: theme.spacing(2),
@@ -59,9 +53,9 @@ export const styles = (theme: Theme) =>
     },
     importButton: {
       marginRight: theme.spacing(5),
-      width: "10vw",
-      height: "auto",
-      fontSize: 20,
+      //width: "7vw",
+      height: "3vh",
+      fontSize: "1em",
     },
     inputImage: {
       width: "40vw",
@@ -89,13 +83,12 @@ export const styles = (theme: Theme) =>
       boxShadow: "0px 10px 20px black",
     },
     generateImageButton: {
-      position: "absolute",
-      width: "20vw",
+      width: "auto",
       fontSize: 30,
-      left: "50%",
-      marginLeft: "-10vw",
+      display: "block",
+      margin: "0 auto",
       bottom: 0,
-      marginBottom: theme.spacing(12),
+      marginTop: theme.spacing(12),
       boxShadow: "0px 5px 10px black",
     },
   });

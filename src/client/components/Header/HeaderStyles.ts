@@ -9,7 +9,7 @@ export interface IHeader extends WithStyles<typeof styles> {
 export const styles = (theme: Theme) =>
   createStyles({
     root: {
-      //flexGrow: 1,
+      flexGrow: 1,
       position: "relative",
       backgroundColor: theme.palette.primary.main,
     },
@@ -18,7 +18,8 @@ export const styles = (theme: Theme) =>
       boxShadow: "0px 0px 35px black",
     },
     logo: {
-      width: "10vw",
+      width: "250px",
+      height: "auto",
       marginLeft: theme.spacing(5),
     },
     menuButton: {
@@ -95,7 +96,6 @@ export const styles = (theme: Theme) =>
       width: "18vw",
       left: "50%",
       marginLeft: "-9vw",
-      //marginBottom: theme.spacing(4),
       textAlign: "center",
       fontSize: 20,
     },
@@ -118,6 +118,7 @@ export const styles = (theme: Theme) =>
     },
     leftItems: {
       left: 0,
+      width: "10vw",
       position: "absolute",
       marginLeft: theme.spacing(2),
     },

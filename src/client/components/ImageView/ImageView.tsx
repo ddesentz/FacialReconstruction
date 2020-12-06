@@ -18,9 +18,6 @@ const ImageViewComponent: React.FunctionComponent<IImageView> = ({
   type,
   classes,
 }) => {
-  if (type === "result") {
-    console.log(src);
-  }
   const determineTitle = () => {
     if (name === "")
       return title.startsWith("Generated")
